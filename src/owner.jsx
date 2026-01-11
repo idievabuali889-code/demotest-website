@@ -773,10 +773,11 @@
 
     function useBodyScrollLock(active, preferredScrollRef){
       const scrollRef = useRef(0);
-      const previousStylesRef = useRef(null);
+      const previousRef = useRef(null);
 
       useLayoutEffect(() => {
-        if (typeof window === 'undefined' || !active) return;
+        if (typeof window === 'undefined') return;
+        if (!active) return;
         const body = document.body;
         const html = document.documentElement;
         if (!body || !html) return;
@@ -787,32 +788,24 @@
           : fallbackY;
 
         scrollRef.current = preferred;
-        previousStylesRef.current = {
-          position: body.style.position,
-          top: body.style.top,
-          width: body.style.width,
-          overflow: body.style.overflow,
-          htmlOverflow: html.style.overflow,
-          overscroll: html.style.overscrollBehavior
+        previousRef.current = {
+          htmlLocked: html.classList.contains('is-locked'),
+          bodyLocked: body.classList.contains('is-locked'),
+          lockY: body.style.getPropertyValue('--lock-y'),
         };
 
-        body.style.position = 'fixed';
-        body.style.top = `-${preferred}px`;
-        body.style.width = '100%';
-        body.style.overflow = 'hidden';
-        html.style.overflow = 'hidden';
-        html.style.overscrollBehavior = 'none';
+        body.style.setProperty('--lock-y', `-${preferred}px`);
+        html.classList.add('is-locked');
+        body.classList.add('is-locked');
 
         return () => {
-          const prev = previousStylesRef.current || {};
-          body.style.position = prev.position || '';
-          body.style.top = prev.top || '';
-          body.style.width = prev.width || '';
-          body.style.overflow = prev.overflow || '';
-          html.style.overflow = prev.htmlOverflow || '';
-          html.style.overscrollBehavior = prev.overscroll || '';
+          const prev = previousRef.current || {};
+          if (!prev.htmlLocked) html.classList.remove('is-locked');
+          if (!prev.bodyLocked) body.classList.remove('is-locked');
+          if (prev.lockY) body.style.setProperty('--lock-y', prev.lockY);
+          else body.style.removeProperty('--lock-y');
           window.scrollTo(0, scrollRef.current || 0);
-          previousStylesRef.current = null;
+          previousRef.current = null;
         };
       }, [active, preferredScrollRef]);
     }
