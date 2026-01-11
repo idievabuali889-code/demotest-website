@@ -1341,13 +1341,8 @@ const { useState, useEffect, useRef, useMemo, useLayoutEffect } = React;
       const variantDims = Object.entries(product.variants || {})
         .filter(([, arr]) => Array.isArray(arr) && arr.length > 0)
         .map(([label]) => label);
-      const variantSummary = variantDims.map((dim) => {
-        const opts = Array.isArray(product?.variants?.[dim]) ? product.variants[dim] : [];
-        if (!opts.length) return null;
-        const preview = opts.slice(0, 3).join(', ');
-        const suffix = opts.length > 3 ? ` +${opts.length - 3}` : '';
-        return `${dim}: ${preview}${suffix}`;
-      }).filter(Boolean);
+      const choicePreview = variantDims.slice(0, 3).join(', ');
+      const choiceSuffix = variantDims.length > 3 ? ` +${variantDims.length - 3} more` : '';
       const filteredSpecs = filterSpecsForDisplay(product.specs, product.variants);
       const specPairs = [];
       const specTags = [];
@@ -1361,6 +1356,8 @@ const { useState, useEffect, useRef, useMemo, useLayoutEffect } = React;
       const extraPairCount = Math.max(specPairs.length - pairsPreview.length, 0);
       const extraTagCount = Math.max(specTags.length - tagsPreview.length, 0);
       const hasInventoryLimits = product.inventory && typeof product.inventory === 'object' && Object.keys(product.inventory).length > 0;
+      const familyLabel = getProductFamily(product);
+      const categoryLabel = String(product.category || '').trim();
       const priceRange = getProductPriceRange(product);
       const priceLabel = priceRange.min === priceRange.max
         ? fmt(priceRange.min)
@@ -1372,6 +1369,8 @@ const { useState, useEffect, useRef, useMemo, useLayoutEffect } = React;
         React.createElement('div', { className: 'flex flex-1 flex-col gap-4 p-5' },
           React.createElement('header', null,
             React.createElement('div', { className: 'flex flex-wrap items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500' },
+              familyLabel && familyLabel !== 'All' && React.createElement('span', { className: 'inline-flex items-center rounded-full border border-[var(--surface-border)] bg-white/70 px-2.5 py-0.5 text-slate-600' }, familyLabel),
+              categoryLabel && categoryLabel !== 'All' && React.createElement('span', { className: 'inline-flex items-center rounded-full border border-[var(--surface-border)] bg-white/70 px-2.5 py-0.5 text-slate-600' }, categoryLabel),
               hasInventoryLimits && React.createElement('span', { className: 'inline-flex items-center rounded-full border border-amber-200 bg-amber-50/80 px-2.5 py-0.5 text-amber-700' }, 'Limited stock')
             ),
             React.createElement('div', { className: 'flex items-start justify-between gap-3' },
@@ -1400,14 +1399,9 @@ const { useState, useEffect, useRef, useMemo, useLayoutEffect } = React;
             tagsPreview.map((s)=> React.createElement('span', { key: s, className: 'inline-flex items-center rounded-full border border-[var(--surface-border)] bg-white/80 px-2.5 py-0.5 font-medium text-slate-600' }, s)),
             extraTagCount > 0 && React.createElement('span', { className: 'inline-flex items-center rounded-full border border-[var(--surface-border)] bg-white/60 px-2.5 py-0.5 font-medium text-slate-500' }, `+${extraTagCount} more`)
           ),
-          variantSummary.length > 0 && React.createElement('div', { className: 'rounded-2xl border border-[var(--surface-border)] bg-white/60 px-3 py-2 text-xs text-slate-600' },
-            React.createElement('div', { className: 'text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500' }, 'Options to choose'),
-            React.createElement('div', { className: 'mt-1 space-y-1' },
-              variantSummary.slice(0, 2).map((line) =>
-                React.createElement('p', { key: line, className: 'font-medium text-slate-700' }, line)
-              ),
-              variantSummary.length > 2 && React.createElement('p', { className: 'text-slate-500' }, `+${variantSummary.length - 2} more option groups`)
-            )
+          variantDims.length > 0 && React.createElement('div', { className: 'rounded-2xl border border-[var(--surface-border)] bg-white/60 px-3 py-2 text-xs text-slate-600' },
+            React.createElement('div', { className: 'text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500' }, 'Customer choices'),
+            React.createElement('p', { className: 'mt-1 font-medium text-slate-700' }, choicePreview || '—', choiceSuffix)
           ),
           React.createElement('div', { className: 'mt-auto' },
             React.createElement('button', {
@@ -1470,6 +1464,18 @@ const { useState, useEffect, useRef, useMemo, useLayoutEffect } = React;
         });
         return { pairs, tags };
       }, [product.specs, product.variants]);
+      const headerMeta = useMemo(() => {
+        const base = Number(product.price) || 0;
+        const values = Object.values(priceMap || {});
+        const min = values.length ? Math.min(base, ...values) : base;
+        const max = values.length ? Math.max(base, ...values) : base;
+        const priceLabel = min === max ? fmt(min) : `${fmt(min)}–${fmt(max)}`;
+        const pricePrefix = values.length ? 'From ' : 'Unit ';
+        const sku = String(product.sku || '').trim();
+        return {
+          label: `${pricePrefix}${priceLabel}${sku ? ` · SKU ${sku}` : ''}`,
+        };
+      }, [product.price, product.sku, priceMap]);
 
       // selected options per dimension (default = all)
       const [active, setActive] = useState({});
@@ -1650,8 +1656,11 @@ const { useState, useEffect, useRef, useMemo, useLayoutEffect } = React;
             onClick: (e) => e.stopPropagation()
           },
             /* header */
-            React.createElement('div', { className: 'flex items-center justify-between border-b border-[var(--surface-border)] bg-white/70 px-5 py-4' },
-              React.createElement('h3', { id: `product-title-${product.id}`, className: 'text-lg font-semibold text-slate-900' }, product.name),
+            React.createElement('div', { className: 'flex items-start justify-between gap-3 border-b border-[var(--surface-border)] bg-white/70 px-5 py-4' },
+              React.createElement('div', { className: 'min-w-0' },
+                React.createElement('h3', { id: `product-title-${product.id}`, className: 'text-lg font-semibold text-slate-900 truncate' }, product.name),
+                React.createElement('p', { className: 'mt-0.5 text-xs font-medium text-slate-500 truncate' }, headerMeta.label)
+              ),
               React.createElement('button', { onClick: onClose, className: 'rounded-full border border-transparent p-2 text-slate-500 transition hover:bg-white focus:outline-none focus-visible:outline-2 focus-visible:outline-brand', 'aria-label': 'Close' },
                 React.createElement(XIcon, { className: 'h-5 w-5' })
               )
