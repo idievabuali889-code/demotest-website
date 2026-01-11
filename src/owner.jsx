@@ -1725,7 +1725,7 @@
 
     function OwnerConsole({ views, section, onSectionChange }){
       const current = views.find((view) => view.id === section) || views[0];
-      return React.createElement('main', { id: 'main', className: 'mx-auto w-full max-w-7xl px-4 pb-16 pt-6 sm:px-6 lg:px-8' },
+      return React.createElement('main', { id: 'main', className: 'mx-auto w-full max-w-7xl px-4 pb-16 pt-4 sm:pt-6 sm:px-6 lg:px-8' },
         React.createElement('div', { className: 'grid gap-6 lg:grid-cols-[minmax(200px,240px),minmax(0,1fr)]' },
           React.createElement('nav', { className: 'flex snap-x snap-mandatory gap-3 overflow-x-auto pb-1 lg:flex-col lg:overflow-visible lg:pb-0' },
             views.map((view) => React.createElement('button', {
@@ -1733,15 +1733,15 @@
               type: 'button',
               onClick: () => onSectionChange(view.id),
               className: cx(
-                'snap-start rounded-2xl border px-4 py-3 text-left shadow-sm transition focus:outline-none focus-visible:outline-2 focus-visible:outline-brand',
+                'snap-start rounded-2xl border px-3 py-2.5 sm:px-4 sm:py-3 text-left shadow-sm transition focus:outline-none focus-visible:outline-2 focus-visible:outline-brand',
                 view.id === current.id
                   ? 'border-brand bg-brand-soft text-brand'
                   : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50'
               )
             },
-              view.icon ? React.createElement(view.icon, { className: 'mb-2 h-5 w-5 text-current' }) : null,
+              view.icon ? React.createElement(view.icon, { className: 'mb-1 h-5 w-5 text-current sm:mb-2' }) : null,
               React.createElement('span', { className: 'block text-sm font-semibold' }, view.label),
-              view.description && React.createElement('span', { className: 'mt-1 block text-xs text-slate-500' }, view.description)
+              view.description && React.createElement('span', { className: 'mt-1 hidden text-xs text-slate-500 sm:block' }, view.description)
             ))
           ),
           React.createElement('section', { className: 'min-h-[480px]' },
@@ -4549,7 +4549,7 @@
       // Centered modal like customer ProductModal (not bottom sheet)
       return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-0 sm:p-6" role="dialog" aria-modal="true">
-          <div ref={ref} className="w-full sm:max-w-3xl rounded-3xl border border-[var(--surface-border)] bg-[rgba(255,255,255,0.96)] backdrop-blur-xl shadow-soft-xl outline-none max-h-[90vh] overflow-y-auto">
+          <div ref={ref} className="w-full h-full sm:h-auto sm:max-w-3xl rounded-none sm:rounded-3xl border border-[var(--surface-border)] bg-[rgba(255,255,255,0.96)] backdrop-blur-xl shadow-soft-xl outline-none max-h-none sm:max-h-[90vh] overflow-y-auto">
             {/* Header */}
             <div className="flex items-center justify-between border-b border-[var(--surface-border)] bg-white/70 px-5 py-4">
               <h3 className="text-lg font-semibold text-slate-900">Edit product</h3>
@@ -4911,7 +4911,7 @@
       }, [products, search]);
 
       return (
-        React.createElement('section', { 'aria-labelledby': 'mgr-title', className: 'mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6' },
+        React.createElement('section', { 'aria-labelledby': 'mgr-title', className: 'mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-4 sm:py-6' },
           React.createElement('div', { className: 'space-y-6 rounded-3xl border border-[var(--surface-border)] bg-white/95 p-6 shadow-soft-xl sm:p-8' },
             React.createElement('div', { className: 'sticky top-[calc(var(--header-offset,64px)+12px)] z-10 rounded-2xl border border-[var(--surface-border)] bg-white/90 px-4 py-3 shadow-sm backdrop-blur' },
               React.createElement('div', { className: 'flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between' },
