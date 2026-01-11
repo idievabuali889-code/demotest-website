@@ -1033,7 +1033,7 @@ const { useState, useEffect, useRef, useMemo, useLayoutEffect } = React;
       return React.createElement('a', { href: '#main', className: 'sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 rounded-full border border-[var(--surface-border)] bg-white/90 px-3 py-2 text-sm font-semibold text-brand shadow-sm backdrop-blur' }, 'Skip to content');
     }
 
-  function Header({ onOpenCart, search, setSearch, ownerMode, setOwnerMode, cartQty, connectionStatus, allowOwnerToggle, families, family, setFamily }){
+  function Header({ onOpenCart, search, setSearch, ownerMode, setOwnerMode, cartQty, connectionStatus, allowOwnerToggle, families, family, setFamily, categories, category, setCategory }){
       const [scrolled, setScrolled] = useState(false);
       const hdrRef = useRef(null);
       const familyScrollRef = useRef(null);
@@ -1048,7 +1048,7 @@ const { useState, useEffect, useRef, useMemo, useLayoutEffect } = React;
         setVar();
         window.addEventListener('resize', setVar, { passive:true });
         return () => window.removeEventListener('resize', setVar);
-      }, [ownerMode, search, families]);
+      }, [ownerMode, search, families, categories]);
 
       useEffect(() => {
         if (ownerMode) return;
@@ -1152,7 +1152,31 @@ const { useState, useEffect, useRef, useMemo, useLayoutEffect } = React;
               React.createElement(SearchIcon, { className: 'pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400' })
             )
           ),
-          !ownerMode && Array.isArray(families) && families.length > 0 && React.createElement('div', { className: 'mt-2 pb-2', 'aria-label': 'Families' },
+          !ownerMode && Array.isArray(families) && families.length > 0 && React.createElement('div', { className: 'sm:hidden mt-2 pb-3', 'aria-label': 'Filters' },
+            React.createElement('div', { className: 'grid grid-cols-2 gap-2' },
+              React.createElement('label', { className: 'block' },
+                React.createElement('span', { className: 'sr-only' }, 'Family'),
+                React.createElement('select', {
+                  value: family,
+                  onChange: (e)=> setFamily(e.target.value),
+                  className: 'w-full rounded-full border border-[var(--surface-border)] bg-white/70 px-3.5 py-2.5 text-sm font-semibold text-slate-700 shadow-inner backdrop-blur focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent'
+                },
+                  (families || []).map((fam)=> React.createElement('option', { key: fam, value: fam }, fam))
+                )
+              ),
+              React.createElement('label', { className: 'block' },
+                React.createElement('span', { className: 'sr-only' }, 'Category'),
+                React.createElement('select', {
+                  value: category,
+                  onChange: (e)=> setCategory(e.target.value),
+                  className: 'w-full rounded-full border border-[var(--surface-border)] bg-white/70 px-3.5 py-2.5 text-sm font-semibold text-slate-700 shadow-inner backdrop-blur focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent'
+                },
+                  (categories || []).map((cat)=> React.createElement('option', { key: cat, value: cat }, cat))
+                )
+              )
+            )
+          ),
+          !ownerMode && Array.isArray(families) && families.length > 0 && React.createElement('div', { className: 'mt-2 pb-2 hidden sm:block', 'aria-label': 'Families' },
             React.createElement('div', { className: familyWrapperClasses },
               React.createElement('div', { ref: familyScrollRef, className: 'chip-scroll-inner overflow-x-auto px-4' },
                 React.createElement('div', { className: 'flex gap-2 py-2 text-[11px]' },
@@ -1278,7 +1302,7 @@ const { useState, useEffect, useRef, useMemo, useLayoutEffect } = React;
       );
 
       return React.createElement(React.Fragment, null,
-        React.createElement('div', { className: 'sticky top-[var(--header-offset,64px)] z-30 border-b border-[var(--surface-border)] bg-[rgba(246,247,251,0.85)] backdrop-blur-lg' },
+        React.createElement('div', { className: 'hidden sm:block sticky top-[var(--header-offset,64px)] z-30 border-b border-[var(--surface-border)] bg-[rgba(246,247,251,0.85)] backdrop-blur-lg' },
           React.createElement('div', { className: 'mx-auto max-w-7xl px-4 sm:px-6 lg:px-8', 'aria-label': 'Categories' },
             React.createElement('div', { className: wrapperClasses },
               React.createElement('div', { ref: containerRef, className: 'chip-scroll-inner overflow-x-auto px-4' },
@@ -3661,7 +3685,7 @@ const { useState, useEffect, useRef, useMemo, useLayoutEffect } = React;
           React.createElement('button', { type: 'button', onClick: ()=> setNotice(null), className: 'text-xs font-medium uppercase tracking-wide text-slate-500 hover:text-slate-700' }, 'Dismiss')
           )
         ),
-  React.createElement(Header, { onOpenCart: ()=> { lastCatalogScrollRef.current = window.scrollY || 0; setCartOpen(true); }, search, setSearch, ownerMode, setOwnerMode: toggleOwnerMode, cartQty, connectionStatus, allowOwnerToggle: OWNER_TOGGLE_ENABLED, families, family, setFamily }),
+  React.createElement(Header, { onOpenCart: ()=> { lastCatalogScrollRef.current = window.scrollY || 0; setCartOpen(true); }, search, setSearch, ownerMode, setOwnerMode: toggleOwnerMode, cartQty, connectionStatus, allowOwnerToggle: OWNER_TOGGLE_ENABLED, families, family, setFamily, categories, category, setCategory }),
         ownerMode ? (
           ownerManage ? (
             React.createElement(OwnerManager, { products: allProducts, catalogConfig, onClose: ()=> setOwnerManage(false), onEdit: (p)=> { lastCatalogScrollRef.current = window.scrollY || 0; setSelectedProduct({ __edit: true, product: p }); }, onHide: (baseId)=> hideBase(baseId), onDelete: (id)=> deleteOwnerProduct(id), onSave: saveEdit })
